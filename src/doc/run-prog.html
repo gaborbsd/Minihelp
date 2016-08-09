@@ -1,0 +1,37 @@
+<html>
+<head><title>Invoking Minihelp Programmatically</title></head>
+<body>
+<h1>Invoking Minihelp Programmatically</h1>
+<p>Invoking the Minihelp involves to steps:</p>
+
+<ol>
+<li><p>The XML configuration file must be read and parsed. This can be
+done with any of the two static methods in <tt>org.kovesdan.minihelp.xml.ConfigurationReader</tt>:</p>
+
+<p><tt>public static Configuration parseConfiguration(File file) throws JAXBException</tt></p>
+
+<p><tt>public static Configuration parseConfiguration(Path path) throws JAXBException</tt></p>
+
+<p>If the XML file is well-formed and valid, a properly initialized <tt>Configuration</tt> object is
+returned. Otherwise, a <tt>JAXBException</tt> is thrown.</p></li>
+
+<li><p>The help window is <tt>org.kovesdan.minihelp.MiniHelp</tt>, a subclass of <tt>JFrame</tt>. After
+instantiating the window, <tt>setVisible(true)</tt> has to be called. There are two constructors
+that can be used. The first one takes a <tt>Configuration</tt> object and an URI that will serve
+as a base <tt>URI</tt>, where documents are looked for. The second one takes two additional
+boolean parameters: whether to show the index and the search tabs. By default, the index
+tab is shown if there are index terms defined in the configuration and the search 
+tab is always shown unconditionally.</p>
+
+<p><tt>public MiniHelp(Configuration configuration, URI baseUri) throws HeadlessException</tt></p>
+
+<p><tt>public MiniHelp(Configuration configuration, URI baseUri, boolean showIndexTab, boolean showSearchTab) throws HeadlessException</tt></p></li>
+</ul>
+
+<p>Alternatively, <tt>org.kovesdan.minihelp.MiniHelpViewer</tt> has a <tt>static void main(String[])</tt>
+method that is used when running from the command-line. It takes the path of the configuration
+file as the first argument, sets the Swing Look and Feel to the system settings and
+properly initializes the help window from the event dispatching thread. It may also be called
+programmatically as a shorthand for these tasks.</p>
+</body>
+</html>

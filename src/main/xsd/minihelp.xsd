@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	elementFormDefault="qualified">
+	<xsd:element name="minihelp">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="title" />
+				<xsd:element ref="homeID" />
+				<xsd:element minOccurs="0" maxOccurs="unbounded" ref="map" />
+				<xsd:element minOccurs="0" maxOccurs="unbounded" ref="tocitem" />
+				<xsd:element minOccurs="0" maxOccurs="unbounded" ref="indexitem" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="title" type="xsd:string" />
+	<xsd:element name="homeID" type="xsd:IDREF" />
+
+	<xsd:element name="map">
+		<xsd:complexType>
+			<xsd:attribute name="target" use="required" type="xsd:ID"/>
+			<xsd:attribute name="url" use="required" />
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="tocitem">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element minOccurs="0" maxOccurs="unbounded" ref="tocitem" />
+			</xsd:sequence>
+			<xsd:attribute name="text" use="required" />
+			<xsd:attribute name="image" />
+			<xsd:attribute name="target" type="xsd:IDREF"/>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="indexitem">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element minOccurs="0" maxOccurs="unbounded" ref="indexitem" />
+				<xsd:element minOccurs="0" maxOccurs="unbounded" ref="indexentry" />
+			</xsd:sequence>
+			<xsd:attribute name="target" />
+			<xsd:attribute name="text" use="required" />
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="indexentry">
+		<xsd:complexType>
+			<xsd:attribute name="target" use="required" />
+			<xsd:attribute name="text" use="required" />
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>

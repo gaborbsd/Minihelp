@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<minihelp xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="../../main/xsd/minihelp.xsd">
+
+	<!-- The title of the root node that encompasses the whole documentation. -->
+	<title>Minihelp Documentation</title>
+
+	<!-- Target ID of the welcome document. -->
+	<homeID>intro</homeID>
+
+	<!-- Mapping of document identifiers to URLs. -->
+	<map target="configure" url="config.html" />
+
+	<!-- A list of documents that are shown in the TOC. -->
+	<tocitem target="intro" text="Introduction" />
+	<tocitem target="using" text="Using Minihelp">
+		<!-- The TOC is hierarchical so subsections are allowed as well. -->
+		<tocitem target="obtain" text="Obtaining Minihelp" />
+		<tocitem target="prereq" text="Prerequisites" />
+		<tocitem target="compile" text="Compiling Minihelp" />
+		<tocitem target="configure" text="Configuring Minihelp" />
+		<tocitem target="run-cmd" text="Invoking Minihelp from the Command Line" />
+		<tocitem target="run-prog" text="Invoking Minihelp Programmatically" />
+	</tocitem>
+	<tocitem target="contact" text="Contact" />
+	<tocitem target="license" text="License" />
+
+
+	<!-- Indexitems are hierarchial and will be displayed in the main keyword 
+		index list, sorted alphabetically. -->
+	<indexitem text="Introduction" target="intro">
+		<!-- There may be secondary indexterms, which are rendered indented. -->
+		<indexitem text="Motivation" target="intro"/>
+		<indexitem text="Features" target="intro"/>
+	</indexitem>
+	<indexitem text="Running">
+		<!-- Indexentries are not displayed in the keyword index list
+		but listed below when the parent keyword is selected. -->
+		<indexentry target="run-cmd" text="Running from Command-line" />
+		<indexentry target="run-prog" text="Running Programmatically"/>
+	</indexitem>
+</minihelp>

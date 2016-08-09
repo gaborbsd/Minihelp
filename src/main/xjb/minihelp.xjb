@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+ <bindings version="2.0"
+                   xmlns="http://java.sun.com/xml/ns/jaxb"
+                   xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+      <bindings schemaLocation="../xsd/minihelp.xsd">
+		<bindings node="//xsd:element[@name='homeID']">
+      <property>
+          <baseType>
+            <javaType name="java.lang.String"/>
+          </baseType>
+        </property>
+		</bindings>
+		<bindings node="//xsd:element[@name='tocitem']//xsd:attribute[@name='target']">
+      <property>
+          <baseType>
+            <javaType name="java.lang.String"/>
+          </baseType>
+        </property>
+		</bindings>
+		<bindings node="//xsd:element[@name='indexentry']">
+		  <class name="IndexEntry"/>
+		  <property name="indexEntries"/>
+		</bindings>
+		<bindings node="//xsd:element[@name='indexitem']">
+		  <class name="IndexItem"/>
+		  <property name="indexItems"/>
+		</bindings>
+		<bindings node="//xsd:element[@name='tocitem']">
+		  <class name="TOCItem"/>
+		  <property name="TOCItems"/>
+		</bindings>
+		<bindings node="//xsd:element[@name='map']">
+		  <class name="DocumentMapping"/>
+		  <property name="documentMappings"/>
+		</bindings>
+		<bindings node="//xsd:element[@name='minihelp']">
+		  <class name="Configuration"/>
+		</bindings>
+      </bindings>
+    </bindings>

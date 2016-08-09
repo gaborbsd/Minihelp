@@ -1,0 +1,27 @@
+<html>
+<head><title>Configuring Minihelp</title></head>
+<body>
+<h1>Configuring Minihelp</h1>
+<p>Minihelp displays single HTML documents in an organized way.
+To describe the documents, the relations between them and the
+index keywords, you need edit an XML file. In this section, we will
+review the structure of this XML file. There is no editor provided,
+the configuration file must be written by hand, but the structure
+is very simple. The root element is called &lt;minihelp&gt;. Inside
+this, the following elements can be used:</p>
+
+<ul>
+<li><p>title</p><p>Content: the main title of the documentation set.</p></li>
+<li><p>homeID</p><p>Content: the identifier of the document that must be shown
+after startup.</p></li>
+<li><p>map</p><p>No content.</p><p>Attribute target: an identifier that will be used
+to refer to a specific resource.</p>
+<p>Attribute url: the URL of the document to associate to the specified identifier.</p></li>
+<li><p>tocitem</p><p>Content: optionally, child TOC items may be specified under a particular item.</p>
+<p>Attribute target: the identifier of the document
+to open when the particular TOC item is selected.</p>
+<p>Attribute text: the title of the particular TOC item.</p></li>
+<li><p>indexitem</p><p>Content: optionally, child index items and index entries.</p>
+</ul>
+</body>
+</html>
