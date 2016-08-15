@@ -42,7 +42,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -58,9 +57,7 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
-import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 
 import org.kovesdan.minihelp.xml.Configuration;
@@ -71,7 +68,7 @@ import org.kovesdan.minihelp.xml.DocumentMapping;
  * 
  * @author Gábor Kövesdán
  */
-public class MiniHelp extends JFrame {
+public class MiniHelp extends JFrame implements HyperlinkListener {
 	private static final long serialVersionUID = 1L;
 
 	private static final String ERROR_PAGE_HEADER = "<html><head>" + "<title>Error loading page</title></head>"
@@ -180,11 +177,7 @@ public class MiniHelp extends JFrame {
 		htmlPane.setContentType("text/html");
 		HTMLEditorKit editorKit = new HTMLEditorKit();
 		htmlPane.setEditorKit(editorKit);
-		HyperlinkListener hlListener = e -> {
-			if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
-				displayPageForUrl(e.getURL());
-		};
-		htmlPane.addHyperlinkListener(hlListener);
+		htmlPane.addHyperlinkListener(this);
 		htmlPane.setEditable(false);
 		htmlPane.setComponentPopupMenu(createMenu());
 		htmlPane.addMouseWheelListener(e -> {
@@ -349,5 +342,11 @@ public class MiniHelp extends JFrame {
 			sb.append(ERROR_PAGE_FOOTER);
 			htmlPane.setText(sb.toString());
 		}
+	}
+	
+	@Override
+	public void hyperlinkUpdate(HyperlinkEvent e) {
+		if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
+			displayPageForUrl(e.getURL());
 	}
 }
