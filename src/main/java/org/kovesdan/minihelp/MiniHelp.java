@@ -70,6 +70,7 @@ public class MiniHelp extends JFrame {
 	protected Map<String, String> mappedContent = new HashMap<>();
 	protected JEditorPane htmlPane = new JEditorPane();
 	protected URI baseUri;
+	protected HistoryManager<String> history = new HistoryManager<>();
 
 	/**
 	 * Constructs the help window, which can later be displayes by calling
@@ -143,12 +144,27 @@ public class MiniHelp extends JFrame {
 			int idx = navPane.indexOfComponent(searchPanel);
 			navPane.setMnemonicAt(idx, KeyEvent.VK_S);
 			KeyStroke searchKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK);
-			getRootPane().registerKeyboardAction(e -> {navPane.setSelectedIndex(idx); searchPanel.requestFocusInWindow();}, searchKeyStroke,
-					JComponent.WHEN_IN_FOCUSED_WINDOW);
+			getRootPane().registerKeyboardAction(e -> {
+				navPane.setSelectedIndex(idx);
+				searchPanel.requestFocusInWindow();
+			}, searchKeyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
 		}
 		leftPanel.add(navPane);
 
 		contentsPanel.add(new MiniHelpContents(configuration, this));
+		
+		KeyStroke altLeftKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_DOWN_MASK);
+		getRootPane().registerKeyboardAction(e -> back(), altLeftKeyStroke,
+				JComponent.WHEN_IN_FOCUSED_WINDOW);
+		KeyStroke backSpaceKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0);
+		getRootPane().registerKeyboardAction(e -> back(), backSpaceKeyStroke,
+				JComponent.WHEN_IN_FOCUSED_WINDOW);
+		KeyStroke altRightKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_DOWN_MASK);
+		getRootPane().registerKeyboardAction(e -> forward(), altRightKeyStroke,
+				JComponent.WHEN_IN_FOCUSED_WINDOW);
+		KeyStroke shiftBackSpaceKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, KeyEvent.SHIFT_DOWN_MASK);
+		getRootPane().registerKeyboardAction(e -> forward(), shiftBackSpaceKeyStroke,
+				JComponent.WHEN_IN_FOCUSED_WINDOW);
 
 		htmlPane.setContentType("text/html");
 		HTMLEditorKit editorKit = new HTMLEditorKit();
@@ -172,9 +188,32 @@ public class MiniHelp extends JFrame {
 		this.setLocation(screenSize.width / 2 - this.getSize().width / 2,
 				screenSize.height / 2 - this.getSize().height / 2);
 	}
+	
+	private void displayPageForUrlNoHistory(String url) {
+		try {
+			htmlPane.setPage(url);
+		} catch (IOException e) {
+			e.printStackTrace();
+			StringBuffer sb = new StringBuffer(ERROR_PAGE_HEADER);
+			sb.append(e.getMessage());
+			sb.append(ERROR_PAGE_FOOTER);
+			htmlPane.setText(sb.toString());
+		}
+	}
+
+	protected void back() {
+		if (history.isBackActive())
+			displayPageForUrlNoHistory(history.back());
+	}
+	
+	protected void forward() {
+		if (history.isForwardActive())
+			displayPageForUrlNoHistory(history.forward());
+	}
 
 	protected void displayPageForUrl(URL url) {
 		try {
+			history.navigatedTo(url.toString());
 			htmlPane.setPage(url.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -188,6 +227,7 @@ public class MiniHelp extends JFrame {
 	protected void displayPageForRelativeUrl(String url) {
 		try {
 			String file = baseUri.resolve(url).toString();
+			history.navigatedTo(file);
 			htmlPane.setPage(file);
 		} catch (IOException e) {
 			e.printStackTrace();
