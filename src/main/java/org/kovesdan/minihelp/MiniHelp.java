@@ -49,12 +49,18 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
+import javax.swing.text.StyledDocument;
+import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 
 import org.kovesdan.minihelp.xml.Configuration;
@@ -73,7 +79,7 @@ public class MiniHelp extends JFrame {
 	private static final String ERROR_PAGE_FOOTER = "</p></body></html>";
 
 	protected Map<String, String> mappedContent = new HashMap<>();
-	protected JEditorPane htmlPane = new JEditorPane();
+	protected JTextPane htmlPane = new JTextPane();
 	protected URI baseUri;
 	protected HistoryManager<String> history = new HistoryManager<>();
 
@@ -181,6 +187,20 @@ public class MiniHelp extends JFrame {
 		htmlPane.addHyperlinkListener(hlListener);
 		htmlPane.setEditable(false);
 		htmlPane.setComponentPopupMenu(createMenu());
+		htmlPane.addMouseWheelListener(e -> {
+	        if (e.isMetaDown() || e.isControlDown()) {
+	            int n = e.getWheelRotation();
+	            if (n < 0)
+	            	while (n!= 0) {
+	            		increaseFont(); n++;
+	            	}
+	            else
+	            	while (n != 0) {
+	            		decreaseFont(); n--;
+	            	}
+	            e.consume();
+	        }
+		});
 
 		displayPageForTarget((String) configuration.getHomeID());
 
@@ -216,6 +236,10 @@ public class MiniHelp extends JFrame {
 		copyMenu.setText("Copy");
 		menu.add(copyMenu);
 		
+		JMenuItem incFontMenu = new JMenuItem("Increase font");
+		incFontMenu.addActionListener(e -> increaseFont());
+		menu.add(incFontMenu);
+		
 		PopupMenuListener listener = new PopupMenuListener() {
 			@Override
 			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
@@ -235,6 +259,22 @@ public class MiniHelp extends JFrame {
 		menu.addPopupMenuListener(listener);
 
 		return menu;
+	}
+	
+	public void increaseFont() {
+	    MutableAttributeSet attrs = htmlPane.getInputAttributes();
+	    int size = StyleConstants.getFontSize(attrs);
+	    StyleConstants.setFontSize(attrs, size * 3 / 2);
+	    StyledDocument doc = htmlPane.getStyledDocument();
+	    doc.setCharacterAttributes(0, doc.getLength() + 1, attrs, false);
+	}
+	
+	public void decreaseFont() {
+	    MutableAttributeSet attrs = htmlPane.getInputAttributes();
+	    int size = StyleConstants.getFontSize(attrs);
+	    StyleConstants.setFontSize(attrs, size * 2 / 3);
+	    StyledDocument doc = htmlPane.getStyledDocument();
+	    doc.setCharacterAttributes(0, doc.getLength() + 1, attrs, false);
 	}
 	
 	private void displayPageForUrlNoHistory(String url) {
