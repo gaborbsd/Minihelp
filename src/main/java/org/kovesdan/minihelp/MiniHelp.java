@@ -44,7 +44,9 @@ import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
@@ -175,6 +177,7 @@ public class MiniHelp extends JFrame {
 		};
 		htmlPane.addHyperlinkListener(hlListener);
 		htmlPane.setEditable(false);
+		htmlPane.setComponentPopupMenu(createMenu());
 
 		displayPageForTarget((String) configuration.getHomeID());
 
@@ -187,6 +190,20 @@ public class MiniHelp extends JFrame {
 		this.setSize(screenSize.width * 2 / 3, screenSize.height * 2 / 3);
 		this.setLocation(screenSize.width / 2 - this.getSize().width / 2,
 				screenSize.height / 2 - this.getSize().height / 2);
+	}
+	
+	protected JPopupMenu createMenu() {
+		JPopupMenu menu = new JPopupMenu();
+
+		JMenuItem backMenu = new JMenuItem("Back");
+		backMenu.addActionListener(e -> back());
+		menu.add(backMenu);
+
+		JMenuItem forwardMenu = new JMenuItem("Forward");
+		forwardMenu.addActionListener(e -> forward());
+		menu.add(forwardMenu);
+
+		return menu;
 	}
 	
 	private void displayPageForUrlNoHistory(String url) {
