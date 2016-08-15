@@ -64,12 +64,12 @@ class MiniHelpMenuBar extends JMenuBar {
 		filePrintMenu.setAccelerator(printKeyStroke);
 		filePrintMenu.setMnemonic(KeyEvent.VK_P);
 		
-		JMenuItem fileExitMenu = new JMenuItem("Exit");
-		fileExitMenu.addActionListener(e -> parent.setVisible(false));
-		fileMenu.add(fileExitMenu);
-		KeyStroke exitKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_F4, KeyEvent.ALT_DOWN_MASK);
-		fileExitMenu.setAccelerator(exitKeyStroke);
-		fileExitMenu.setMnemonic(KeyEvent.VK_X);
+		JMenuItem fileCloseMenu = new JMenuItem("Close");
+		fileCloseMenu.addActionListener(e -> parent.setVisible(false));
+		fileMenu.add(fileCloseMenu);
+		KeyStroke exitKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.CTRL_DOWN_MASK);
+		fileCloseMenu.setAccelerator(exitKeyStroke);
+		fileCloseMenu.setMnemonic(KeyEvent.VK_C);
 		
 		this.add(fileMenu);
 	}
