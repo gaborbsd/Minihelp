@@ -67,9 +67,9 @@ public class MiniHelp extends JFrame {
 			+ "<body><h1>Error loading page</h1><p>";
 	private static final String ERROR_PAGE_FOOTER = "</p></body></html>";
 
-	private Map<String, String> mappedContent = new HashMap<>();
-	private JEditorPane htmlPane = new JEditorPane();
-	private URI baseUri;
+	protected Map<String, String> mappedContent = new HashMap<>();
+	protected JEditorPane htmlPane = new JEditorPane();
+	protected URI baseUri;
 
 	/**
 	 * Constructs the help window, which can later be displayes by calling
@@ -173,7 +173,7 @@ public class MiniHelp extends JFrame {
 				screenSize.height / 2 - this.getSize().height / 2);
 	}
 
-	void displayPageForUrl(URL url) {
+	protected void displayPageForUrl(URL url) {
 		try {
 			htmlPane.setPage(url.toString());
 		} catch (IOException e) {
@@ -185,7 +185,7 @@ public class MiniHelp extends JFrame {
 		}
 	}
 
-	void displayPageForRelativeUrl(String url) {
+	protected void displayPageForRelativeUrl(String url) {
 		try {
 			String file = baseUri.resolve(url).toString();
 			htmlPane.setPage(file);
@@ -198,7 +198,7 @@ public class MiniHelp extends JFrame {
 		}
 	}
 
-	void displayPageForTarget(String target) {
+	protected void displayPageForTarget(String target) {
 		String url = mappedContent.get(target);
 		if (url != null)
 			displayPageForRelativeUrl(url);
