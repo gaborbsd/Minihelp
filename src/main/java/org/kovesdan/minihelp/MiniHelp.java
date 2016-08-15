@@ -52,6 +52,9 @@ import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.html.HTMLEditorKit;
 
 import org.kovesdan.minihelp.xml.Configuration;
@@ -202,6 +205,34 @@ public class MiniHelp extends JFrame {
 		JMenuItem forwardMenu = new JMenuItem("Forward");
 		forwardMenu.addActionListener(e -> forward());
 		menu.add(forwardMenu);
+		
+		menu.addSeparator();
+		
+		JMenuItem selectAllMenu = new JMenuItem("Select all");
+		selectAllMenu.addActionListener(e -> htmlPane.selectAll());
+		menu.add(selectAllMenu);
+		
+		JMenuItem copyMenu = new JMenuItem(new DefaultEditorKit.CopyAction());
+		copyMenu.setText("Copy");
+		menu.add(copyMenu);
+		
+		PopupMenuListener listener = new PopupMenuListener() {
+			@Override
+			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+				backMenu.setEnabled(history.isBackActive());
+				forwardMenu.setEnabled(history.isForwardActive());
+				copyMenu.setEnabled(htmlPane.getSelectedText() != null);
+			}
+			
+			@Override
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+			}
+			
+			@Override
+			public void popupMenuCanceled(PopupMenuEvent e) {
+			}
+		};
+		menu.addPopupMenuListener(listener);
 
 		return menu;
 	}
