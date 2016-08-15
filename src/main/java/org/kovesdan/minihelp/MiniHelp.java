@@ -79,6 +79,8 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 	protected JTextPane htmlPane = new JTextPane();
 	protected URI baseUri;
 	protected HistoryManager<String> history = new HistoryManager<>();
+	protected MiniHelpSearch searchPanel;
+	protected JTabbedPane navPane;
 
 	/**
 	 * Constructs the help window, which can later be displayes by calling
@@ -130,7 +132,7 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		JSplitPane helpWindowPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
 		this.add(helpWindowPane);
 
-		JTabbedPane navPane = new JTabbedPane();
+		navPane = new JTabbedPane();
 		JPanel contentsPanel = new JPanel(new GridLayout(1, 1));
 		navPane.addTab("Contents", contentsPanel);
 		navPane.setMnemonicAt(0, KeyEvent.VK_T);
@@ -147,7 +149,7 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 					JComponent.WHEN_IN_FOCUSED_WINDOW);
 		}
 		if (showSearchTab) {
-			JPanel searchPanel = new MiniHelpSearch(configuration.getIndexItems(), configuration.getTOCItems(), this);
+			searchPanel = new MiniHelpSearch(configuration.getIndexItems(), configuration.getTOCItems(), this);
 			navPane.addTab("Search", searchPanel);
 			int idx = navPane.indexOfComponent(searchPanel);
 			navPane.setMnemonicAt(idx, KeyEvent.VK_S);
@@ -229,9 +231,12 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		copyMenu.setText("Copy");
 		menu.add(copyMenu);
 		
-		JMenuItem incFontMenu = new JMenuItem("Increase font");
-		incFontMenu.addActionListener(e -> increaseFont());
-		menu.add(incFontMenu);
+		JMenuItem searchForTerm = new JMenuItem("Search for selected text");
+		searchForTerm.addActionListener(e -> {
+			searchPanel.initSearch(htmlPane.getSelectedText());
+			navPane.setSelectedComponent(searchPanel);
+		});
+		menu.add(searchForTerm);
 		
 		PopupMenuListener listener = new PopupMenuListener() {
 			@Override

@@ -124,6 +124,11 @@ class MiniHelpSearch extends JPanel implements FocusListener {
 		resultModel.setData(new ArrayList<>(resultSet));
 		resultList.clearSelection();
 	}
+	
+	public void initSearch(String keyword) {
+		searchField.setText(keyword);
+		search(keyword);
+	}
 
 	private void updateHtmlPane(MiniHelp mainApp) {
 		int index = resultList.getSelectionModel().getMinSelectionIndex();
