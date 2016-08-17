@@ -35,6 +35,7 @@ import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -346,6 +347,14 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 			sb.append(".");
 			sb.append(ERROR_PAGE_FOOTER);
 			htmlPane.setText(sb.toString());
+		}
+	}
+	
+	public URL getCurrentURL() {
+		try {
+			return new URL(history.current());
+		} catch (MalformedURLException e) {
+			return null;
 		}
 	}
 	
