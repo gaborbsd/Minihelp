@@ -37,7 +37,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -63,6 +62,7 @@ import javax.swing.text.html.HTMLEditorKit;
 
 import org.kovesdan.minihelp.xml.Configuration;
 import org.kovesdan.minihelp.xml.DocumentMapping;
+import org.kovesdan.minihelp.xml.TOCItem;
 
 /**
  * The window class of the help viewer.
@@ -76,9 +76,8 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 			+ "<body><h1>Error loading page</h1><p>";
 	private static final String ERROR_PAGE_FOOTER = "</p></body></html>";
 
-	protected Map<String, String> mappedContent = new HashMap<>();
+	protected Map<String, URL> mappedContent = new HashMap<>();
 	protected JTextPane htmlPane = new JTextPane();
-	protected URI baseUri;
 	protected HistoryManager<String> history = new HistoryManager<>();
 	protected MiniHelpSearch searchPanel;
 	protected JTabbedPane navPane;
@@ -122,11 +121,22 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 	public MiniHelp(Configuration configuration, URI baseUri, boolean showIndexTab, boolean showSearchTab)
 			throws HeadlessException {
 		super(configuration.getTitle());
-		this.baseUri = baseUri;
 
+		// store document mapping
 		for (DocumentMapping m : configuration.getDocumentMappings()) {
-			mappedContent.put(m.getTarget(), m.getUrl());
+			try {
+				URL url = baseUri.resolve(m.getUrl()).toURL();
+				mappedContent.put(m.getTarget(), url);
+			} catch (MalformedURLException e1) {
+				// TODO: warning; not mapping malformed URLs
+			}
 		}
+
+		// default mapping for documents that are not explicitly mapped
+		for (TOCItem i : configuration.getTOCItems()) {
+			mapTOCItem(i, baseUri);
+		}
+		map(configuration.getHomeID(), baseUri);
 
 		JPanel leftPanel = new JPanel(new GridLayout(1, 1));
 		JPanel rightPanel = new JPanel(new GridLayout(1, 1));
@@ -198,7 +208,7 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 	        }
 		});
 
-		displayPageForTarget((String) configuration.getHomeID());
+		displayPageForTarget(configuration.getHomeID());
 
 		rightPanel.add(htmlPane);
 
@@ -209,6 +219,25 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		this.setSize(screenSize.width * 2 / 3, screenSize.height * 2 / 3);
 		this.setLocation(screenSize.width / 2 - this.getSize().width / 2,
 				screenSize.height / 2 - this.getSize().height / 2);
+	}
+	
+	private void map(String target, URI baseUri) {
+		if (!mappedContent.containsKey(target)) {
+			try {
+				URL url = baseUri.resolve(target + ".html").toURL();
+				File file = new File(url.getFile());
+				if (file.isFile())
+					mappedContent.put(target, url);
+			} catch (MalformedURLException e1) {
+				// TODO: warning; not mapping malformed URLs
+			}
+		}
+	}
+	
+	private void mapTOCItem(TOCItem i, URI baseUri) {
+		map(i.getTarget(), baseUri);
+		for (TOCItem i2 : i.getTOCItems())
+			mapTOCItem(i2, baseUri);
 	}
 	
 	protected JPopupMenu createMenu() {
@@ -311,43 +340,9 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		}
 	}
 
-	protected void displayPageForRelativeUrl(String url) {
-		try {
-			String file = baseUri.resolve(url).toString();
-			history.navigatedTo(file);
-			htmlPane.setPage(file);
-		} catch (IOException e) {
-			e.printStackTrace();
-			StringBuffer sb = new StringBuffer(ERROR_PAGE_HEADER);
-			sb.append(e.getMessage());
-			sb.append(ERROR_PAGE_FOOTER);
-			htmlPane.setText(sb.toString());
-		}
-	}
-
 	protected void displayPageForTarget(String target) {
-		String url = mappedContent.get(target);
-		if (url != null)
-			displayPageForRelativeUrl(url);
-		else {
-			String file = baseUri.resolve(target + ".html").toString();
-			File f;
-			try {
-				f = new File(new URI(file).getPath());
-				if (f.isFile()) {
-					displayPageForRelativeUrl(file);
-					return;
-				}
-			} catch (URISyntaxException e) {
-			}
-
-			StringBuffer sb = new StringBuffer(ERROR_PAGE_HEADER);
-			sb.append("Page not mapped for target ");
-			sb.append(target);
-			sb.append(".");
-			sb.append(ERROR_PAGE_FOOTER);
-			htmlPane.setText(sb.toString());
-		}
+		URL url = mappedContent.get(target);
+		displayPageForUrl(url);
 	}
 	
 	public URL getCurrentURL() {
