@@ -86,6 +86,7 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 	protected JTextPane htmlPane = new JTextPane();
 	protected HistoryManager<String> history = new HistoryManager<>();
 	protected MiniHelpSearch searchPanel;
+	protected MiniHelpIndex indexPanel;
 	protected JTabbedPane navPane;
 
 	/**
@@ -128,32 +129,7 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 			throws HeadlessException {
 		super(configuration.getTitle());
 
-		// store document mapping
-		for (DocumentMapping m : configuration.getDocumentMappings()) {
-			try {
-				URL url = baseUri.resolve(m.getUrl()).toURL();
-				mappedContent.put(m.getTarget(), url);
-			} catch (MalformedURLException e1) {
-				// TODO: warning; not mapping malformed URLs
-			}
-		}
-
-		// default mapping for documents that are not explicitly mapped
-		for (TOCItem i : configuration.getTOCItems()) {
-			mapTOCItem(i, baseUri);
-		}
-		map(configuration.getHomeID(), baseUri);
-		
-		// copy TOC
-		TOCItem rootTOC = new TOCItem();
-		rootTOC.setText(configuration.getTitle());
-		rootTOC.setTarget(configuration.getHomeID());
-		rootTOC.getTOCItems().addAll(configuration.getTOCItems());
-		tableOfContents.add(rootTOC);
-		
-		// merge indexes
-		for (IndexItem i : configuration.getIndexItems())
-			mergeIndexInto(indexes, i);
+		addHelpset(configuration, baseUri);
 
 		JPanel leftPanel = new JPanel(new GridLayout(1, 1));
 		JPanel rightPanel = new JPanel(new GridLayout(1, 1));
@@ -162,35 +138,21 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 
 		navPane = new JTabbedPane();
 		JPanel contentsPanel = new JPanel(new GridLayout(1, 1));
+		contentsPanel.add(new MiniHelpContents(tableOfContents, this));
+		
 		navPane.addTab("Contents", contentsPanel);
 		navPane.setMnemonicAt(0, KeyEvent.VK_T);
 		KeyStroke tocKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_T, KeyEvent.CTRL_DOWN_MASK);
 		getRootPane().registerKeyboardAction(e -> navPane.setSelectedIndex(0), tocKeyStroke,
 				JComponent.WHEN_IN_FOCUSED_WINDOW);
-		if (showIndexTab) {
-			JPanel indexPanel = new MiniHelpIndex(indexes, this);
-			navPane.addTab("Index", indexPanel);
-			int idx = navPane.indexOfComponent(indexPanel);
-			navPane.setMnemonicAt(idx, KeyEvent.VK_I);
-			KeyStroke indexKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_I, KeyEvent.CTRL_DOWN_MASK);
-			getRootPane().registerKeyboardAction(e -> navPane.setSelectedIndex(idx), indexKeyStroke,
-					JComponent.WHEN_IN_FOCUSED_WINDOW);
-		}
-		if (showSearchTab) {
-			searchPanel = new MiniHelpSearch(indexes, tableOfContents, this);
-			navPane.addTab("Search", searchPanel);
-			int idx = navPane.indexOfComponent(searchPanel);
-			navPane.setMnemonicAt(idx, KeyEvent.VK_S);
-			KeyStroke searchKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK);
-			getRootPane().registerKeyboardAction(e -> {
-				navPane.setSelectedIndex(idx);
-				searchPanel.requestFocusInWindow();
-			}, searchKeyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
-		}
+		indexPanel = new MiniHelpIndex(indexes, this);
+		searchPanel = new MiniHelpSearch(indexes, tableOfContents, this);
+		if (showIndexTab)
+			enableIndexPanel();
+		if (showSearchTab)
+			enableSearchPanel();
 		leftPanel.add(navPane);
 
-		contentsPanel.add(new MiniHelpContents(tableOfContents, this));
-		
 		KeyStroke altLeftKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_DOWN_MASK);
 		getRootPane().registerKeyboardAction(e -> back(), altLeftKeyStroke,
 				JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -236,6 +198,81 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		this.setSize(screenSize.width * 2 / 3, screenSize.height * 2 / 3);
 		this.setLocation(screenSize.width / 2 - this.getSize().width / 2,
 				screenSize.height / 2 - this.getSize().height / 2);
+	}
+
+	public void addHelpset(Configuration configuration, URI baseUri) {
+		// store document mapping
+		for (DocumentMapping m : configuration.getDocumentMappings()) {
+			try {
+				URL url = baseUri.resolve(m.getUrl()).toURL();
+				mappedContent.put(m.getTarget(), url);
+			} catch (MalformedURLException e1) {
+				// TODO: warning; not mapping malformed URLs
+			}
+		}
+
+		// default mapping for documents that are not explicitly mapped
+		for (TOCItem i : configuration.getTOCItems()) {
+			mapTOCItem(i, baseUri);
+		}
+		map(configuration.getHomeID(), baseUri);
+		
+		// copy TOC
+		TOCItem rootTOC = new TOCItem();
+		rootTOC.setText(configuration.getTitle());
+		rootTOC.setTarget(configuration.getHomeID());
+		rootTOC.getTOCItems().addAll(configuration.getTOCItems());
+		tableOfContents.add(rootTOC);
+		
+		// merge indexes
+		for (IndexItem i : configuration.getIndexItems())
+			mergeIndexInto(indexes, i);
+	}
+	
+	public void enableIndexPanel() {
+		int idx = navPane.indexOfComponent(indexPanel);
+		if (idx != -1)
+			return;
+
+		navPane.addTab("Index", indexPanel);
+		idx = navPane.indexOfComponent(indexPanel);
+		navPane.setMnemonicAt(idx, KeyEvent.VK_I);
+		KeyStroke indexKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_I, KeyEvent.CTRL_DOWN_MASK);
+		getRootPane().registerKeyboardAction(e -> navPane.setSelectedIndex(navPane.indexOfComponent(indexPanel)),
+				indexKeyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+	}
+	
+	public void disableIndexPanel() {
+		int idx = navPane.indexOfComponent(indexPanel);
+		if (idx == -1)
+			return;
+		navPane.remove(indexPanel);
+		KeyStroke indexKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_I, KeyEvent.CTRL_DOWN_MASK);
+		getRootPane().registerKeyboardAction(e -> {
+		}, indexKeyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+	}
+	
+	public void enableSearchPanel() {
+		int idx = navPane.indexOfComponent(searchPanel);
+		if (idx != -1)
+			return;
+
+		navPane.addTab("Search", searchPanel);
+		idx = navPane.indexOfComponent(searchPanel);
+		navPane.setMnemonicAt(idx, KeyEvent.VK_S);
+		KeyStroke searchKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK);
+		getRootPane().registerKeyboardAction(e -> navPane.setSelectedIndex(navPane.indexOfComponent(searchPanel)),
+				searchKeyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+	}
+
+	public void disableSearchPanel() {
+		int idx = navPane.indexOfComponent(searchPanel);
+		if (idx == -1)
+			return;
+		navPane.remove(searchPanel);
+		KeyStroke searchKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK);
+		getRootPane().registerKeyboardAction(e -> {
+		}, searchKeyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
 	}
 	
 	private void map(String target, URI baseUri) {
