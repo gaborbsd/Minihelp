@@ -94,7 +94,7 @@ class MiniHelpSearch extends JPanel implements FocusListener {
 	}
 
 	private void searchIndexItem(IndexItem item, String keyword) {
-		if (matches(item.getText(), keyword))
+		if (matches(item.getText(), keyword) && item.getTarget() != null)
 			resultSet.add(new LinkInfo(item.getText().trim(), item.getTarget()));
 
 		for (IndexItem i : item.getIndexItems())
