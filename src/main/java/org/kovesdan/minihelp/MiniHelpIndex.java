@@ -53,7 +53,8 @@ class MiniHelpIndex extends JPanel {
 	private MiniHelpIndexListModel<LinkInfo> resultModel;
 	protected DefaultListCellRenderer defaultRenderer = new DefaultListCellRenderer();
 
-	private List<IndexItem> list = new ArrayList<>();
+	private List<IndexItem> index;
+	private List<IndexItem> flattenedIndex;
 
 	private void flattenList(List<IndexItem> index, int level) {
 		Collections.sort(index, (o1, o2) -> o1.getText().compareTo(o2.getText()));
@@ -65,7 +66,7 @@ class MiniHelpIndex extends JPanel {
 			IndexItem copy = new IndexItem();
 			copy.setText(sb.toString());
 			copy.setTarget(item.getTarget());
-			list.add(copy);
+			flattenedIndex.add(copy);
 			flattenList(item.getIndexItems(), level + 1);
 		}
 	}
@@ -94,10 +95,8 @@ class MiniHelpIndex extends JPanel {
 
 	public MiniHelpIndex(List<IndexItem> index, MiniHelp mainApp) {
 		super(new GridLayout(2, 1));
-		flattenList(index, 0);
-
-		ListModel<IndexItem> listModel = new MiniHelpIndexListModel<>(list);
-		indexList = new JList<>(listModel);
+		this.index = index;
+		indexList = new JList<>();
 		indexList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		JScrollPane listScroller = new JScrollPane(indexList);
 		indexList.setCellRenderer(new ListCellRenderer<IndexItem>() {
@@ -114,13 +113,19 @@ class MiniHelpIndex extends JPanel {
 		indexList.addListSelectionListener(e -> updateHtmlPaneWithIndexterm(mainApp));
 		indexList.addFocusListener(new FocusGainedListener(() -> updateHtmlPaneWithIndexterm(mainApp)));
 		add(listScroller);
-
 		resultModel = new MiniHelpIndexListModel<>(Collections.emptyList());
 		resultList = new JList<>(resultModel);
 		JScrollPane resultScroller = new JScrollPane(resultList);
 		resultList.addListSelectionListener(e -> updateHtmlPaneWithIndexentry(mainApp));
 		resultList.addFocusListener(new FocusGainedListener(() -> updateHtmlPaneWithIndexentry(mainApp)));
 		add(resultScroller);
+		updateModel();
 	}
 
+	public void updateModel() {
+		flattenedIndex = new ArrayList<>();
+		flattenList(index, 0);
+		ListModel<IndexItem> listModel = new MiniHelpIndexListModel<>(flattenedIndex);
+		indexList.setModel(listModel);
+	}
 }

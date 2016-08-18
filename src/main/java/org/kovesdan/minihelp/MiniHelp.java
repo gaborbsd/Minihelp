@@ -87,24 +87,78 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 	protected HistoryManager<String> history = new HistoryManager<>();
 	protected MiniHelpSearch searchPanel;
 	protected MiniHelpIndex indexPanel;
+	protected MiniHelpContents contentsTree;
 	protected JTabbedPane navPane;
+	
+	public MiniHelp(String mainTitle, boolean showIndexTab, boolean showSearchTab) {
+		super(mainTitle);
+		JPanel leftPanel = new JPanel(new GridLayout(1, 1));
+		JPanel rightPanel = new JPanel(new GridLayout(1, 1));
+		JSplitPane helpWindowPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
+		this.add(helpWindowPane);
 
-	/**
-	 * Constructs the help window, which can later be displayes by calling
-	 * setVisible(true).
-	 * 
-	 * @param configuration
-	 *            the {@link Configuration} object that contains the parsed
-	 *            configuration data.
-	 * @param baseUri
-	 *            the {@link URI}, where relative paths of the documents are
-	 *            resolved.
-	 * @throws HeadlessException
-	 */
-	public MiniHelp(Configuration configuration, URI baseUri) throws HeadlessException {
-		this(configuration, baseUri, configuration.getIndexItems().isEmpty() ? false : true, true);
+		navPane = new JTabbedPane();
+		JPanel contentsPanel = new JPanel(new GridLayout(1, 1));
+		contentsTree = new MiniHelpContents(tableOfContents, this);
+		contentsPanel.add(contentsTree);
+
+		navPane.addTab("Contents", contentsPanel);
+		navPane.setMnemonicAt(0, KeyEvent.VK_T);
+		KeyStroke tocKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_T, KeyEvent.CTRL_DOWN_MASK);
+		getRootPane().registerKeyboardAction(e -> navPane.setSelectedIndex(0), tocKeyStroke,
+				JComponent.WHEN_IN_FOCUSED_WINDOW);
+		indexPanel = new MiniHelpIndex(indexes, this);
+		searchPanel = new MiniHelpSearch(indexes, tableOfContents, this);
+		if (showIndexTab)
+			enableIndexPanel();
+		if (showSearchTab)
+			enableSearchPanel();
+		leftPanel.add(navPane);
+
+		KeyStroke altLeftKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_DOWN_MASK);
+		getRootPane().registerKeyboardAction(e -> back(), altLeftKeyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+		KeyStroke backSpaceKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0);
+		getRootPane().registerKeyboardAction(e -> back(), backSpaceKeyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+		KeyStroke altRightKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_DOWN_MASK);
+		getRootPane().registerKeyboardAction(e -> forward(), altRightKeyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+		KeyStroke shiftBackSpaceKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, KeyEvent.SHIFT_DOWN_MASK);
+		getRootPane().registerKeyboardAction(e -> forward(), shiftBackSpaceKeyStroke,
+				JComponent.WHEN_IN_FOCUSED_WINDOW);
+
+		htmlPane.setContentType("text/html");
+		HTMLEditorKit editorKit = new HTMLEditorKit();
+		htmlPane.setEditorKit(editorKit);
+		htmlPane.addHyperlinkListener(this);
+		htmlPane.setEditable(false);
+		htmlPane.setComponentPopupMenu(createMenu());
+		htmlPane.addMouseWheelListener(e -> {
+			if (e.isMetaDown() || e.isControlDown()) {
+				int n = e.getWheelRotation();
+				if (n < 0)
+					while (n != 0) {
+						increaseFont();
+						n++;
+					}
+				else
+					while (n != 0) {
+						decreaseFont();
+						n--;
+					}
+				e.consume();
+			}
+		});
+
+		rightPanel.add(htmlPane);
+
+		this.setJMenuBar(new MiniHelpMenuBar(this, htmlPane));
+
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		this.setMinimumSize(new Dimension(screenSize.width * 10 / 24, screenSize.height * 10 / 24));
+		this.setSize(screenSize.width * 2 / 3, screenSize.height * 2 / 3);
+		this.setLocation(screenSize.width / 2 - this.getSize().width / 2,
+				screenSize.height / 2 - this.getSize().height / 2);
 	}
-
+	
 	/**
 	 * 
 	 * Constructs the help window, which can later be displayes by calling
@@ -125,79 +179,43 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 	 *            <code>true</code>.
 	 * @throws HeadlessException
 	 */
-	public MiniHelp(Configuration configuration, URI baseUri, boolean showIndexTab, boolean showSearchTab)
-			throws HeadlessException {
-		super(configuration.getTitle());
-
+	public MiniHelp(String mainTitle, Configuration configuration, URI baseUri, boolean showIndexTab,
+			boolean showSearchTab) throws HeadlessException {
+		this(mainTitle, showIndexTab, showSearchTab);
 		addHelpset(configuration, baseUri);
+	}
 
-		JPanel leftPanel = new JPanel(new GridLayout(1, 1));
-		JPanel rightPanel = new JPanel(new GridLayout(1, 1));
-		JSplitPane helpWindowPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
-		this.add(helpWindowPane);
-
-		navPane = new JTabbedPane();
-		JPanel contentsPanel = new JPanel(new GridLayout(1, 1));
-		contentsPanel.add(new MiniHelpContents(tableOfContents, this));
-		
-		navPane.addTab("Contents", contentsPanel);
-		navPane.setMnemonicAt(0, KeyEvent.VK_T);
-		KeyStroke tocKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_T, KeyEvent.CTRL_DOWN_MASK);
-		getRootPane().registerKeyboardAction(e -> navPane.setSelectedIndex(0), tocKeyStroke,
-				JComponent.WHEN_IN_FOCUSED_WINDOW);
-		indexPanel = new MiniHelpIndex(indexes, this);
-		searchPanel = new MiniHelpSearch(indexes, tableOfContents, this);
-		if (showIndexTab)
-			enableIndexPanel();
-		if (showSearchTab)
-			enableSearchPanel();
-		leftPanel.add(navPane);
-
-		KeyStroke altLeftKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_DOWN_MASK);
-		getRootPane().registerKeyboardAction(e -> back(), altLeftKeyStroke,
-				JComponent.WHEN_IN_FOCUSED_WINDOW);
-		KeyStroke backSpaceKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0);
-		getRootPane().registerKeyboardAction(e -> back(), backSpaceKeyStroke,
-				JComponent.WHEN_IN_FOCUSED_WINDOW);
-		KeyStroke altRightKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_DOWN_MASK);
-		getRootPane().registerKeyboardAction(e -> forward(), altRightKeyStroke,
-				JComponent.WHEN_IN_FOCUSED_WINDOW);
-		KeyStroke shiftBackSpaceKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, KeyEvent.SHIFT_DOWN_MASK);
-		getRootPane().registerKeyboardAction(e -> forward(), shiftBackSpaceKeyStroke,
-				JComponent.WHEN_IN_FOCUSED_WINDOW);
-
-		htmlPane.setContentType("text/html");
-		HTMLEditorKit editorKit = new HTMLEditorKit();
-		htmlPane.setEditorKit(editorKit);
-		htmlPane.addHyperlinkListener(this);
-		htmlPane.setEditable(false);
-		htmlPane.setComponentPopupMenu(createMenu());
-		htmlPane.addMouseWheelListener(e -> {
-	        if (e.isMetaDown() || e.isControlDown()) {
-	            int n = e.getWheelRotation();
-	            if (n < 0)
-	            	while (n!= 0) {
-	            		increaseFont(); n++;
-	            	}
-	            else
-	            	while (n != 0) {
-	            		decreaseFont(); n--;
-	            	}
-	            e.consume();
-	        }
-		});
-
-		displayPageForTarget(configuration.getHomeID());
-
-		rightPanel.add(htmlPane);
-
-		this.setJMenuBar(new MiniHelpMenuBar(this, htmlPane));
-
-		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-		this.setMinimumSize(new Dimension(screenSize.width * 10 / 24, screenSize.height * 10 / 24));
-		this.setSize(screenSize.width * 2 / 3, screenSize.height * 2 / 3);
-		this.setLocation(screenSize.width / 2 - this.getSize().width / 2,
-				screenSize.height / 2 - this.getSize().height / 2);
+	/**
+	 * Constructs the help window, which can later be displayes by calling
+	 * setVisible(true).
+	 * 
+	 * @param configuration
+	 *            the {@link Configuration} object that contains the parsed
+	 *            configuration data.
+	 * @param baseUri
+	 *            the {@link URI}, where relative paths of the documents are
+	 *            resolved.
+	 * @throws HeadlessException
+	 */
+	public MiniHelp(String mainTitle, Configuration configuration, URI baseUri) throws HeadlessException {
+		this(mainTitle, configuration, baseUri, configuration.getIndexItems().isEmpty() ? false : true, true);
+	}
+	
+	/**
+	 * Constructs the help window, which can later be displayes by calling
+	 * setVisible(true).
+	 * 
+	 * @param configuration
+	 *            the {@link Configuration} object that contains the parsed
+	 *            configuration data.
+	 * @param baseUri
+	 *            the {@link URI}, where relative paths of the documents are
+	 *            resolved.
+	 * @throws HeadlessException
+	 */
+	public MiniHelp(Configuration configuration, URI baseUri) throws HeadlessException {
+		this(configuration.getTitle(), configuration, baseUri, configuration.getIndexItems().isEmpty() ? false : true,
+				true);
 	}
 
 	public void addHelpset(Configuration configuration, URI baseUri) {
@@ -227,6 +245,9 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		// merge indexes
 		for (IndexItem i : configuration.getIndexItems())
 			mergeIndexInto(indexes, i);
+		
+		contentsTree.updateModel();
+		indexPanel.updateModel();
 	}
 	
 	public void enableIndexPanel() {

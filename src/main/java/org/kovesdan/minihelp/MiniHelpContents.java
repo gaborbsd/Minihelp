@@ -43,6 +43,7 @@ class MiniHelpContents extends JTree implements TreeSelectionListener {
 	private static final long serialVersionUID = 1L;
 
 	private MiniHelp mainApp;
+	private List<TOCItem> tableOfContents;
 
 	private void createLeaves(DefaultMutableTreeNode parent, List<TOCItem> items) {
 		for (TOCItem i : items) {
@@ -57,11 +58,16 @@ class MiniHelpContents extends JTree implements TreeSelectionListener {
 
 	public MiniHelpContents(List<TOCItem> tableOfContents, MiniHelp mainApp) {
 		this.mainApp = mainApp;
+		this.tableOfContents = tableOfContents;
+		this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+		addTreeSelectionListener(this);
+		updateModel();
+	}
+	
+	public void updateModel() {
 		DefaultMutableTreeNode top = new DefaultMutableTreeNode("Documentation");
 		DefaultTreeModel model = new DefaultTreeModel(top);
 		this.setModel(model);
-		this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-		addTreeSelectionListener(this);
 		setShowsRootHandles(true);
 		createLeaves(top, tableOfContents);
 	}
