@@ -38,8 +38,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -62,6 +65,7 @@ import javax.swing.text.html.HTMLEditorKit;
 
 import org.kovesdan.minihelp.xml.Configuration;
 import org.kovesdan.minihelp.xml.DocumentMapping;
+import org.kovesdan.minihelp.xml.IndexItem;
 import org.kovesdan.minihelp.xml.TOCItem;
 
 /**
@@ -77,6 +81,8 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 	private static final String ERROR_PAGE_FOOTER = "</p></body></html>";
 
 	protected Map<String, URL> mappedContent = new HashMap<>();
+	protected List<TOCItem> tableOfContents = new ArrayList<>();
+	protected List<IndexItem> indexes = new ArrayList<>();
 	protected JTextPane htmlPane = new JTextPane();
 	protected HistoryManager<String> history = new HistoryManager<>();
 	protected MiniHelpSearch searchPanel;
@@ -137,6 +143,17 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 			mapTOCItem(i, baseUri);
 		}
 		map(configuration.getHomeID(), baseUri);
+		
+		// copy TOC
+		TOCItem rootTOC = new TOCItem();
+		rootTOC.setText(configuration.getTitle());
+		rootTOC.setTarget(configuration.getHomeID());
+		rootTOC.getTOCItems().addAll(configuration.getTOCItems());
+		tableOfContents.add(rootTOC);
+		
+		// merge indexes
+		for (IndexItem i : configuration.getIndexItems())
+			mergeIndexInto(indexes, i);
 
 		JPanel leftPanel = new JPanel(new GridLayout(1, 1));
 		JPanel rightPanel = new JPanel(new GridLayout(1, 1));
@@ -151,7 +168,7 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		getRootPane().registerKeyboardAction(e -> navPane.setSelectedIndex(0), tocKeyStroke,
 				JComponent.WHEN_IN_FOCUSED_WINDOW);
 		if (showIndexTab) {
-			JPanel indexPanel = new MiniHelpIndex(configuration.getIndexItems(), this);
+			JPanel indexPanel = new MiniHelpIndex(indexes, this);
 			navPane.addTab("Index", indexPanel);
 			int idx = navPane.indexOfComponent(indexPanel);
 			navPane.setMnemonicAt(idx, KeyEvent.VK_I);
@@ -160,7 +177,7 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 					JComponent.WHEN_IN_FOCUSED_WINDOW);
 		}
 		if (showSearchTab) {
-			searchPanel = new MiniHelpSearch(configuration.getIndexItems(), configuration.getTOCItems(), this);
+			searchPanel = new MiniHelpSearch(indexes, tableOfContents, this);
 			navPane.addTab("Search", searchPanel);
 			int idx = navPane.indexOfComponent(searchPanel);
 			navPane.setMnemonicAt(idx, KeyEvent.VK_S);
@@ -172,7 +189,7 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		}
 		leftPanel.add(navPane);
 
-		contentsPanel.add(new MiniHelpContents(configuration, this));
+		contentsPanel.add(new MiniHelpContents(tableOfContents, this));
 		
 		KeyStroke altLeftKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_DOWN_MASK);
 		getRootPane().registerKeyboardAction(e -> back(), altLeftKeyStroke,
@@ -238,6 +255,17 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		map(i.getTarget(), baseUri);
 		for (TOCItem i2 : i.getTOCItems())
 			mapTOCItem(i2, baseUri);
+	}
+	
+	private void mergeIndexInto(List<IndexItem> list, IndexItem item) {
+		Optional<IndexItem> same = indexes.stream().filter(i -> i.getText().equals(item.getText())).findFirst();
+		if (same.isPresent()) {
+			for (IndexItem i : item.getIndexItems())
+				mergeIndexInto(same.get().getIndexItems(), i);
+			same.get().getIndexEntries().addAll(item.getIndexEntries());
+		} else {
+			indexes.add(item);
+		}
 	}
 	
 	protected JPopupMenu createMenu() {

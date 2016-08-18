@@ -62,8 +62,10 @@ class MiniHelpIndex extends JPanel {
 			for (int i = 0; i < level; i++)
 				sb.append("  ");
 			sb.append(item.getText());
-			item.setText(sb.toString());
-			list.add(item);
+			IndexItem copy = new IndexItem();
+			copy.setText(sb.toString());
+			copy.setTarget(item.getTarget());
+			list.add(copy);
 			flattenList(item.getIndexItems(), level + 1);
 		}
 	}

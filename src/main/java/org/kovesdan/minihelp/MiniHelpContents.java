@@ -37,7 +37,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.kovesdan.minihelp.xml.Configuration;
 import org.kovesdan.minihelp.xml.TOCItem;
 
 class MiniHelpContents extends JTree implements TreeSelectionListener {
@@ -56,15 +55,15 @@ class MiniHelpContents extends JTree implements TreeSelectionListener {
 		}
 	}
 
-	public MiniHelpContents(Configuration configuration, MiniHelp mainApp) {
+	public MiniHelpContents(List<TOCItem> tableOfContents, MiniHelp mainApp) {
 		this.mainApp = mainApp;
-		DefaultMutableTreeNode top = new DefaultMutableTreeNode(configuration.getTitle());
+		DefaultMutableTreeNode top = new DefaultMutableTreeNode("Documentation");
 		DefaultTreeModel model = new DefaultTreeModel(top);
 		this.setModel(model);
 		this.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		addTreeSelectionListener(this);
 		setShowsRootHandles(true);
-		createLeaves(top, configuration.getTOCItems());
+		createLeaves(top, tableOfContents);
 	}
 
 	@Override
