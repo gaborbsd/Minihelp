@@ -80,6 +80,8 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 			+ "<body><h1>Error loading page</h1><p>";
 	private static final String ERROR_PAGE_FOOTER = "</p></body></html>";
 
+	protected String homeID = null;
+	protected String currentTarget = null;
 	protected Map<String, URL> mappedContent = new HashMap<>();
 	protected List<TOCItem> tableOfContents = new ArrayList<>();
 	protected List<IndexItem> indexes = new ArrayList<>();
@@ -249,6 +251,9 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		
 		contentsTree.updateModel();
 		indexPanel.updateModel();
+		if (homeID == null)
+			homeID = configuration.getHomeID();
+		displayHomePage();
 	}
 	
 	public void enableIndexPanel() {
@@ -431,9 +436,15 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		}
 	}
 
-	protected void displayPageForTarget(String target) {
+	public void displayPageForTarget(String target) {
+		currentTarget = target;
 		URL url = mappedContent.get(target);
 		displayPageForUrl(url);
+	}
+	
+	public void displayHomePage() {
+		if (homeID != null)
+			displayPageForTarget(homeID);
 	}
 	
 	public URL getCurrentURL() {
