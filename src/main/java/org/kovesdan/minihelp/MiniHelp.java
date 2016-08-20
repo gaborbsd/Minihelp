@@ -85,6 +85,7 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 	protected List<IndexItem> indexes = new ArrayList<>();
 	protected JTextPane htmlPane = new JTextPane();
 	protected HistoryManager<String> history = new HistoryManager<>();
+	protected JPanel contentsPanel;
 	protected MiniHelpSearch searchPanel;
 	protected MiniHelpIndex indexPanel;
 	protected MiniHelpContents contentsTree;
@@ -98,7 +99,7 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		this.add(helpWindowPane);
 
 		navPane = new JTabbedPane();
-		JPanel contentsPanel = new JPanel(new GridLayout(1, 1));
+		contentsPanel = new JPanel(new GridLayout(1, 1));
 		contentsTree = new MiniHelpContents(tableOfContents, this);
 		contentsPanel.add(contentsTree);
 
@@ -259,7 +260,7 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		idx = navPane.indexOfComponent(indexPanel);
 		navPane.setMnemonicAt(idx, KeyEvent.VK_I);
 		KeyStroke indexKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_I, KeyEvent.CTRL_DOWN_MASK);
-		getRootPane().registerKeyboardAction(e -> navPane.setSelectedIndex(navPane.indexOfComponent(indexPanel)),
+		getRootPane().registerKeyboardAction(e -> showIndexPanel(),
 				indexKeyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
 	}
 	
@@ -282,7 +283,7 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		idx = navPane.indexOfComponent(searchPanel);
 		navPane.setMnemonicAt(idx, KeyEvent.VK_S);
 		KeyStroke searchKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK);
-		getRootPane().registerKeyboardAction(e -> navPane.setSelectedIndex(navPane.indexOfComponent(searchPanel)),
+		getRootPane().registerKeyboardAction(e -> showSearchPanel(),
 				searchKeyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
 	}
 
@@ -441,6 +442,24 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		} catch (MalformedURLException e) {
 			return null;
 		}
+	}
+	
+	public void showSearchPanel() {
+		int idx = navPane.indexOfComponent(searchPanel);
+		if (idx != -1)
+			return;
+		navPane.setSelectedIndex(navPane.indexOfComponent(searchPanel));
+	}
+	
+	public void showIndexPanel() {
+		int idx = navPane.indexOfComponent(indexPanel);
+		if (idx != -1)
+			return;
+		navPane.setSelectedIndex(navPane.indexOfComponent(indexPanel));
+	}
+	
+	public void showTOCPanel() {
+		navPane.setSelectedIndex(navPane.indexOfComponent(contentsPanel));
 	}
 	
 	@Override
