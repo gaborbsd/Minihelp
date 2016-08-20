@@ -108,7 +108,7 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		getRootPane().registerKeyboardAction(e -> navPane.setSelectedIndex(0), tocKeyStroke,
 				JComponent.WHEN_IN_FOCUSED_WINDOW);
 		indexPanel = new MiniHelpIndex(indexes, this);
-		searchPanel = new MiniHelpSearch(indexes, tableOfContents, this);
+		searchPanel = new MiniHelpSearch(mappedContent, indexes, tableOfContents, this);
 		if (showIndexTab)
 			enableIndexPanel();
 		if (showSearchTab)
