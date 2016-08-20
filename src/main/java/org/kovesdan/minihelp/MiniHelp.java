@@ -455,6 +455,10 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		}
 	}
 	
+	public String getCurrentTarget() {
+		return currentTarget;
+	}
+	
 	public void showSearchPanel() {
 		int idx = navPane.indexOfComponent(searchPanel);
 		if (idx != -1)
