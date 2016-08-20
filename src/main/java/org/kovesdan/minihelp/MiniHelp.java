@@ -349,7 +349,7 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		
 		JMenuItem searchForTerm = new JMenuItem("Search for selected text");
 		searchForTerm.addActionListener(e -> {
-			searchPanel.initSearch(htmlPane.getSelectedText());
+			searchPanel.search(htmlPane.getSelectedText(), true, false, false);
 			navPane.setSelectedComponent(searchPanel);
 		});
 		menu.add(searchForTerm);
@@ -389,6 +389,10 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 	    StyleConstants.setFontSize(attrs, size * 2 / 3);
 	    StyledDocument doc = htmlPane.getStyledDocument();
 	    doc.setCharacterAttributes(0, doc.getLength() + 1, attrs, false);
+	}
+	
+	public void search(String keyword, boolean fullText, boolean caseSensitive, boolean wholeWords) {
+		searchPanel.search(keyword, fullText, caseSensitive, wholeWords);
 	}
 	
 	private void displayPageForUrlNoHistory(String url) {

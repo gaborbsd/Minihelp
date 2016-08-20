@@ -201,7 +201,7 @@ class MiniHelpSearch extends JPanel implements FocusListener {
 		}
 	}
 	
-	public void initSearch(String keyword) {
+	private void initSearch(String keyword) {
 		searchField.setText(keyword);
 		resultSet.clear();
 		searchButton.setEnabled(false);
@@ -210,6 +210,16 @@ class MiniHelpSearch extends JPanel implements FocusListener {
     	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
     	SearchTask searchTask = new SearchTask();
     	searchTask.execute();
+	}
+	
+	public void search(String keyword, boolean fullText, boolean caseSensitive, boolean wholeWords) {
+		this.fullText = fullText;
+		fullTextCheckBox.setSelected(fullText);
+		this.caseSensitive = caseSensitive;
+		caseSensitiveCheckBox.setSelected(caseSensitive);
+		this.wholeWords = wholeWords;
+		wholeWordCheckBox.setSelected(wholeWords);
+		initSearch(keyword);
 	}
 
 	private void updateHtmlPane(MiniHelp mainApp) {
