@@ -28,11 +28,14 @@
  */
 package org.kovesdan.minihelp;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
+import java.awt.print.PrinterException;
+import java.awt.print.PrinterJob;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -44,6 +47,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.print.attribute.HashPrintRequestAttributeSet;
+import javax.print.attribute.PrintRequestAttributeSet;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
@@ -87,18 +92,21 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 	protected List<IndexItem> indexes = new ArrayList<>();
 	protected JTextPane htmlPane = new JTextPane();
 	protected HistoryManager<String> history = new HistoryManager<>();
+	protected MiniHelpToolbar toolbar;
 	protected JPanel contentsPanel;
 	protected MiniHelpSearch searchPanel;
 	protected MiniHelpIndex indexPanel;
 	protected MiniHelpContents contentsTree;
 	protected JTabbedPane navPane;
+	protected PrintRequestAttributeSet attr = new HashPrintRequestAttributeSet();
+	protected PrinterJob printerJob = PrinterJob.getPrinterJob();
 	
 	public MiniHelp(String mainTitle, boolean showIndexTab, boolean showSearchTab) {
 		super(mainTitle);
 		JPanel leftPanel = new JPanel(new GridLayout(1, 1));
 		JPanel rightPanel = new JPanel(new GridLayout(1, 1));
 		JSplitPane helpWindowPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftPanel, rightPanel);
-		this.add(helpWindowPane);
+		this.add(helpWindowPane, BorderLayout.CENTER);
 
 		navPane = new JTabbedPane();
 		contentsPanel = new JPanel(new GridLayout(1, 1));
@@ -153,7 +161,10 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 
 		rightPanel.add(htmlPane);
 
-		this.setJMenuBar(new MiniHelpMenuBar(this, htmlPane));
+		this.setJMenuBar(new MiniHelpMenuBar(this));
+		
+		toolbar = new MiniHelpToolbar(this);
+		this.add(toolbar, BorderLayout.NORTH);
 
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		this.setMinimumSize(new Dimension(screenSize.width * 10 / 24, screenSize.height * 10 / 24));
@@ -414,19 +425,24 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 	}
 
 	protected void back() {
-		if (history.isBackActive())
+		if (history.isBackActive()) {
 			displayPageForUrlNoHistory(history.back());
+			toolbar.updateActiveButtons();
+		}
 	}
 	
 	protected void forward() {
-		if (history.isForwardActive())
+		if (history.isForwardActive()) {
 			displayPageForUrlNoHistory(history.forward());
+			toolbar.updateActiveButtons();
+		}
 	}
 
 	protected void displayPageForUrl(URL url) {
 		try {
 			history.navigatedTo(url.toString());
 			htmlPane.setPage(url.toString());
+			toolbar.updateActiveButtons();
 		} catch (IOException e) {
 			e.printStackTrace();
 			StringBuffer sb = new StringBuffer(ERROR_PAGE_HEADER);
@@ -475,6 +491,18 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 	
 	public void showTOCPanel() {
 		navPane.setSelectedIndex(navPane.indexOfComponent(contentsPanel));
+	}
+	
+	public void print() {
+		try {
+			htmlPane.print(null, null, true, printerJob.getPrintService(), attr, true);
+		} catch (PrinterException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void pageSetup() {
+		printerJob.pageDialog(attr);
 	}
 	
 	@Override

@@ -28,13 +28,8 @@
  */
 package org.kovesdan.minihelp;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.print.PrinterException;
 
-import javax.swing.JEditorPane;
-import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -43,29 +38,23 @@ import javax.swing.KeyStroke;
 class MiniHelpMenuBar extends JMenuBar {
 	private static final long serialVersionUID = 1L;
 
-	public MiniHelpMenuBar(JFrame parent, JEditorPane editor) {
+	public MiniHelpMenuBar(MiniHelp mainApp) {
 		JMenu fileMenu = new JMenu("File");
 		fileMenu.setMnemonic(KeyEvent.VK_F);
 
 		JMenuItem filePrintMenu = new JMenuItem("Print");
-		filePrintMenu.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				try {
-					editor.print();
-				} catch (PrinterException e1) {
-					e1.printStackTrace();
-				}
-			}
-		});
+		filePrintMenu.addActionListener(e -> mainApp.print());
 		fileMenu.add(filePrintMenu);
 		KeyStroke printKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK);
 		filePrintMenu.setAccelerator(printKeyStroke);
 		filePrintMenu.setMnemonic(KeyEvent.VK_P);
 		
+		JMenuItem filePageSetupMenu = new JMenuItem("Page Setup");
+		filePageSetupMenu.addActionListener(e -> mainApp.pageSetup());
+		fileMenu.add(filePageSetupMenu);
+		
 		JMenuItem fileCloseMenu = new JMenuItem("Close");
-		fileCloseMenu.addActionListener(e -> parent.setVisible(false));
+		fileCloseMenu.addActionListener(e -> mainApp.setVisible(false));
 		fileMenu.add(fileCloseMenu);
 		KeyStroke exitKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.CTRL_DOWN_MASK);
 		fileCloseMenu.setAccelerator(exitKeyStroke);
