@@ -46,36 +46,36 @@ class MiniHelpToolbar extends JToolBar {
 		
 		backButton = new JButton();
 		backButton.addActionListener(e -> mainApp.back());
-		initButton(backButton, "back.png", "Back", "Previous Page");
+		initButton(backButton, "back.png", Messages.get("Back"), Messages.get("Previous Page"));
 		add(backButton);
 		
 		forwardButton = new JButton();
 		forwardButton.addActionListener(e -> mainApp.forward());
-		initButton(forwardButton, "forward.png", "Forward", "Next Page");
+		initButton(forwardButton, "forward.png", Messages.get("Forward"), Messages.get("Next Page"));
 		add(forwardButton);
 		
 		addSeparator();
 		
 		JButton printButton = new JButton();
 		printButton.addActionListener(e -> mainApp.print());
-		initButton(printButton, "print.png", "Print", "Print");
+		initButton(printButton, "print.png", Messages.get("Print"), Messages.get("Print"));
 		add(printButton);
 		
 		JButton pageSetupButton = new JButton();
 		pageSetupButton.addActionListener(e -> mainApp.pageSetup());
-		initButton(pageSetupButton, "pagesetup.png", "Page Setup", "Page Setup");
+		initButton(pageSetupButton, "pagesetup.png", Messages.get("Page Setup"), Messages.get("Page Setup"));
 		add(pageSetupButton);
 		
 		addSeparator();
 		
 		JButton decFontButton = new JButton();
 		decFontButton.addActionListener(e -> mainApp.decreaseFont());
-		initButton(decFontButton, "dec.png", "Font--", "Decrease Font Size");
+		initButton(decFontButton, "dec.png", Messages.get("Decrease Font"), Messages.get("Decrease Font Size"));
 		add(decFontButton);
 		
 		JButton incFontButton = new JButton();
 		incFontButton.addActionListener(e -> mainApp.increaseFont());
-		initButton(incFontButton, "inc.png", "Font++", "Increase Font Size");
+		initButton(incFontButton, "inc.png", Messages.get("Increase Font"), Messages.get("Increase Font Size"));
 		add(incFontButton);
 		
 		updateActiveButtons();

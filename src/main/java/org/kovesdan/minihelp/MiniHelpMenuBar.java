@@ -28,37 +28,32 @@
  */
 package org.kovesdan.minihelp;
 
-import java.awt.event.KeyEvent;
-
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.KeyStroke;
 
 class MiniHelpMenuBar extends JMenuBar {
 	private static final long serialVersionUID = 1L;
 
 	public MiniHelpMenuBar(MiniHelp mainApp) {
-		JMenu fileMenu = new JMenu("File");
-		fileMenu.setMnemonic(KeyEvent.VK_F);
+		JMenu fileMenu = new JMenu(Messages.get("File"));
+		fileMenu.setMnemonic(Messages.mnemonic("File Mnemonic", "F"));
 
-		JMenuItem filePrintMenu = new JMenuItem("Print");
+		JMenuItem filePrintMenu = new JMenuItem(Messages.get("Print"));
 		filePrintMenu.addActionListener(e -> mainApp.print());
 		fileMenu.add(filePrintMenu);
-		KeyStroke printKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK);
-		filePrintMenu.setAccelerator(printKeyStroke);
-		filePrintMenu.setMnemonic(KeyEvent.VK_P);
+		Messages.accelerator(filePrintMenu, "File Print Acc", "control P");
+		filePrintMenu.setMnemonic(Messages.mnemonic("Print Mnemonic", "P"));
 		
-		JMenuItem filePageSetupMenu = new JMenuItem("Page Setup");
+		JMenuItem filePageSetupMenu = new JMenuItem(Messages.get("Page Setup"));
 		filePageSetupMenu.addActionListener(e -> mainApp.pageSetup());
 		fileMenu.add(filePageSetupMenu);
 		
-		JMenuItem fileCloseMenu = new JMenuItem("Close");
+		JMenuItem fileCloseMenu = new JMenuItem(Messages.get("Close"));
 		fileCloseMenu.addActionListener(e -> mainApp.setVisible(false));
 		fileMenu.add(fileCloseMenu);
-		KeyStroke exitKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.CTRL_DOWN_MASK);
-		fileCloseMenu.setAccelerator(exitKeyStroke);
-		fileCloseMenu.setMnemonic(KeyEvent.VK_C);
+		Messages.accelerator(fileCloseMenu, "File Close Acc", "control W");
+		fileCloseMenu.setMnemonic(Messages.mnemonic("Close Mnemonic", "C"));
 		
 		this.add(fileMenu);
 	}

@@ -33,7 +33,6 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.HeadlessException;
 import java.awt.Toolkit;
-import java.awt.event.KeyEvent;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.io.File;
@@ -57,7 +56,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
-import javax.swing.KeyStroke;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.event.PopupMenuEvent;
@@ -113,10 +111,9 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		contentsTree = new MiniHelpContents(tableOfContents, this);
 		contentsPanel.add(contentsTree);
 
-		navPane.addTab("Contents", contentsPanel);
-		navPane.setMnemonicAt(0, KeyEvent.VK_T);
-		KeyStroke tocKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_T, KeyEvent.CTRL_DOWN_MASK);
-		getRootPane().registerKeyboardAction(e -> navPane.setSelectedIndex(0), tocKeyStroke,
+		navPane.addTab(Messages.get("Contents"), contentsPanel);
+		navPane.setMnemonicAt(0, Messages.mnemonic("Content Mnemonic", "T"));
+		Messages.keyBoardAction(getRootPane(), e -> navPane.setSelectedIndex(0), "TOC Tab Key", "control T",
 				JComponent.WHEN_IN_FOCUSED_WINDOW);
 		indexPanel = new MiniHelpIndex(indexes, this);
 		searchPanel = new MiniHelpSearch(mappedContent, indexes, tableOfContents, this);
@@ -126,14 +123,13 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 			enableSearchPanel();
 		leftPanel.add(navPane);
 
-		KeyStroke altLeftKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyEvent.ALT_DOWN_MASK);
-		getRootPane().registerKeyboardAction(e -> back(), altLeftKeyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
-		KeyStroke backSpaceKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0);
-		getRootPane().registerKeyboardAction(e -> back(), backSpaceKeyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
-		KeyStroke altRightKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyEvent.ALT_DOWN_MASK);
-		getRootPane().registerKeyboardAction(e -> forward(), altRightKeyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
-		KeyStroke shiftBackSpaceKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, KeyEvent.SHIFT_DOWN_MASK);
-		getRootPane().registerKeyboardAction(e -> forward(), shiftBackSpaceKeyStroke,
+		Messages.keyBoardAction(getRootPane(), e -> back(), "Back Key 1", "alt LEFT",
+				JComponent.WHEN_IN_FOCUSED_WINDOW);
+		Messages.keyBoardAction(getRootPane(), e -> back(), "Back Key 2", "BACKSPACE",
+				JComponent.WHEN_IN_FOCUSED_WINDOW);
+		Messages.keyBoardAction(getRootPane(), e -> forward(), "Forward Key 1", "alt RIGHT",
+				JComponent.WHEN_IN_FOCUSED_WINDOW);
+		Messages.keyBoardAction(getRootPane(), e -> forward(), "Forward Key 2", "shift BACKSPACE",
 				JComponent.WHEN_IN_FOCUSED_WINDOW);
 
 		htmlPane.setContentType("text/html");
@@ -272,12 +268,11 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		if (idx != -1)
 			return;
 
-		navPane.addTab("Index", indexPanel);
+		navPane.addTab(Messages.get("Index"), indexPanel);
 		idx = navPane.indexOfComponent(indexPanel);
-		navPane.setMnemonicAt(idx, KeyEvent.VK_I);
-		KeyStroke indexKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_I, KeyEvent.CTRL_DOWN_MASK);
-		getRootPane().registerKeyboardAction(e -> showIndexPanel(),
-				indexKeyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+		navPane.setMnemonicAt(idx, Messages.mnemonic("Index Mnemonic", "I"));
+		Messages.keyBoardAction(getRootPane(), e -> showIndexPanel(), "Index Tab Key", "control I",
+				JComponent.WHEN_IN_FOCUSED_WINDOW);
 	}
 	
 	public void disableIndexPanel() {
@@ -285,9 +280,8 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		if (idx == -1)
 			return;
 		navPane.remove(indexPanel);
-		KeyStroke indexKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_I, KeyEvent.CTRL_DOWN_MASK);
-		getRootPane().registerKeyboardAction(e -> {
-		}, indexKeyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+		Messages.keyBoardAction(getRootPane(), e -> {}, "Index Tab Key", "control I",
+				JComponent.WHEN_IN_FOCUSED_WINDOW);
 	}
 	
 	public void enableSearchPanel() {
@@ -295,12 +289,11 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		if (idx != -1)
 			return;
 
-		navPane.addTab("Search", searchPanel);
+		navPane.addTab(Messages.get("Search"), searchPanel);
 		idx = navPane.indexOfComponent(searchPanel);
-		navPane.setMnemonicAt(idx, KeyEvent.VK_S);
-		KeyStroke searchKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK);
-		getRootPane().registerKeyboardAction(e -> showSearchPanel(),
-				searchKeyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+		navPane.setMnemonicAt(idx, Messages.mnemonic("Search Mnemonic", "S"));
+		Messages.keyBoardAction(getRootPane(), e -> showSearchPanel(), "Search Tab Key", "control S",
+				JComponent.WHEN_IN_FOCUSED_WINDOW);
 	}
 
 	public void disableSearchPanel() {
@@ -308,9 +301,8 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		if (idx == -1)
 			return;
 		navPane.remove(searchPanel);
-		KeyStroke searchKeyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK);
-		getRootPane().registerKeyboardAction(e -> {
-		}, searchKeyStroke, JComponent.WHEN_IN_FOCUSED_WINDOW);
+		Messages.keyBoardAction(getRootPane(), e -> {}, "Search Tab Key", "control S",
+				JComponent.WHEN_IN_FOCUSED_WINDOW);
 	}
 	
 	private void map(String target, URI baseUri) {
@@ -346,25 +338,25 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 	protected JPopupMenu createMenu() {
 		JPopupMenu menu = new JPopupMenu();
 
-		JMenuItem backMenu = new JMenuItem("Back");
+		JMenuItem backMenu = new JMenuItem(Messages.get("Back"));
 		backMenu.addActionListener(e -> back());
 		menu.add(backMenu);
 
-		JMenuItem forwardMenu = new JMenuItem("Forward");
+		JMenuItem forwardMenu = new JMenuItem(Messages.get("Forward"));
 		forwardMenu.addActionListener(e -> forward());
 		menu.add(forwardMenu);
 		
 		menu.addSeparator();
 		
-		JMenuItem selectAllMenu = new JMenuItem("Select all");
+		JMenuItem selectAllMenu = new JMenuItem(Messages.get("Select All"));
 		selectAllMenu.addActionListener(e -> htmlPane.selectAll());
 		menu.add(selectAllMenu);
 		
 		JMenuItem copyMenu = new JMenuItem(new DefaultEditorKit.CopyAction());
-		copyMenu.setText("Copy");
+		copyMenu.setText(Messages.get("Copy"));
 		menu.add(copyMenu);
 		
-		JMenuItem searchForTerm = new JMenuItem("Search for selected text");
+		JMenuItem searchForTerm = new JMenuItem(Messages.get("Search for Selected Text"));
 		searchForTerm.addActionListener(e -> {
 			searchPanel.search(htmlPane.getSelectedText(), true, false, false);
 			navPane.setSelectedComponent(searchPanel);
