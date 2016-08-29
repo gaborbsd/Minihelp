@@ -47,50 +47,49 @@ class MiniHelpToolbar extends JToolBar {
 		
 		backButton = new JButton();
 		backButton.addActionListener(e -> mainApp.back());
-		initButton(backButton, "back.png", "Back");
+		initButton(backButton, "back.png", "Back", "Previous Page");
 		add(backButton);
 		
 		forwardButton = new JButton();
 		forwardButton.addActionListener(e -> mainApp.forward());
-		initButton(forwardButton, "forward.png", "Forward");
+		initButton(forwardButton, "forward.png", "Forward", "Next Page");
 		add(forwardButton);
 		
 		addSeparator();
 		
 		JButton printButton = new JButton();
 		printButton.addActionListener(e -> mainApp.print());
-		initButton(printButton, "print.png", "Print");
+		initButton(printButton, "print.png", "Print", "Print");
 		add(printButton);
 		
 		JButton pageSetupButton = new JButton();
 		pageSetupButton.addActionListener(e -> mainApp.pageSetup());
-		initButton(pageSetupButton, "pagesetup.png", "Page Setup");
+		initButton(pageSetupButton, "pagesetup.png", "Page Setup", "Page Setup");
 		add(pageSetupButton);
 		
 		addSeparator();
 		
-		JButton decFontButton = new JButton("A");
-		Font decFont = decFontButton.getFont();
-		decFontButton.setFont(decFont.deriveFont(Font.BOLD, 16.0f));
+		JButton decFontButton = new JButton();
 		decFontButton.addActionListener(e -> mainApp.decreaseFont());
+		initButton(decFontButton, "dec.png", "Font--", "Decrease Font Size");
 		add(decFontButton);
 		
-		JButton incFontButton = new JButton("A");
-		Font incFont = incFontButton.getFont();
-		incFontButton.setFont(incFont.deriveFont(Font.BOLD, 32.0f));
+		JButton incFontButton = new JButton();
 		incFontButton.addActionListener(e -> mainApp.increaseFont());
+		initButton(incFontButton, "inc.png", "Font++", "Increase Font Size");
 		add(incFontButton);
 		
 		updateActiveButtons();
 	}
 	
-	private void initButton(JButton button, String imgName, String altText) {
+	private void initButton(JButton button, String imgName, String altText, String tooltip) {
 		ClassLoader classLoader = getClass().getClassLoader();
 		URL imgUrl = classLoader.getResource(imgName);
 		if (imgUrl != null)
 			button.setIcon(new ImageIcon(imgUrl, altText));
 		else
 			button.setText(altText);
+		button.setToolTipText(tooltip);
 	}
 	
 	public void updateActiveButtons() {
