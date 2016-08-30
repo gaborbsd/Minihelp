@@ -28,47 +28,56 @@
  */
 package org.kovesdan.minihelp;
 
-import java.io.File;
 import java.net.URI;
-
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
-import javax.xml.bind.JAXBException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import org.kovesdan.minihelp.xml.Configuration;
-import org.kovesdan.minihelp.xml.ConfigurationReader;
 
-/**
- * The main class that can be called from command-line to display the help
- * window for a given configuration file. The only command-line argument is the
- * path to the configuration file.
- * 
- * @author Gábor Kövesdán
- */
-public class MiniHelpViewer {
+class Helpset {
+	Configuration configuration;
+	URI baseUri;
 
-	/**
-	 * The main method that displays the help window.
-	 * 
-	 * @param args the command-line parameters.
-	 */
-	public static void main(String[] args) {
-		try {
-			File config = new File(args[0]);
-			URI baseUri = config.getParentFile().toURI();
-			Configuration configuration = ConfigurationReader.parseConfiguration(config);
+	public Helpset(Configuration configuration, URI baseUri) {
+		super();
+		this.configuration = configuration;
+		this.baseUri = baseUri;
+	}
+}
 
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+public class MiniHelpFactory {
+	private Locale locale = Locale.getDefault();
+	private String mainTitle = "Documentation";
+	private boolean showIndexTab = true;
+	private boolean showSearchTab = true;
+	private List<Helpset> helpsets = new ArrayList<>();
 
-			MiniHelpFactory factory = new MiniHelpFactory();
-			factory.setMainTitle("Documentation");
-			factory.addHelpset(configuration, baseUri);
-			MiniHelp help = factory.getMiniHelp();
-			SwingUtilities.invokeLater(() -> help.setVisible(true));
-		} catch (JAXBException | ClassNotFoundException | InstantiationException | IllegalAccessException
-				| UnsupportedLookAndFeelException e) {
-			e.printStackTrace();
-		}
+	public void setLocale(Locale locale) {
+		this.locale = locale;
+	}
+
+	public void setMainTitle(String mainTitle) {
+		this.mainTitle = mainTitle;
+	}
+
+	public void setShowIndexTab(boolean showIndexTab) {
+		this.showIndexTab = showIndexTab;
+	}
+
+	public void setShowSearchTab(boolean showSearchTab) {
+		this.showSearchTab = showSearchTab;
+	}
+
+	public void addHelpset(Configuration configuration, URI baseUri) {
+		helpsets.add(new Helpset(configuration, baseUri));
+	}
+
+	public MiniHelp getMiniHelp() {
+		Messages.setLocale(locale);
+		MiniHelp help = new MiniHelp(mainTitle, showIndexTab, showSearchTab);
+		for (Helpset hs : helpsets)
+			help.addHelpset(hs.configuration, hs.baseUri);
+		return help;
 	}
 }

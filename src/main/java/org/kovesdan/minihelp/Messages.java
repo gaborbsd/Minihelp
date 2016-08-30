@@ -37,7 +37,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
-public class Messages {
+class Messages {
 	private static ResourceBundle bundle;
 
 	static {

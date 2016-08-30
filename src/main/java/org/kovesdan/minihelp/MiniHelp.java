@@ -107,7 +107,7 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 	protected PrintRequestAttributeSet attr = new HashPrintRequestAttributeSet();
 	protected PrinterJob printerJob = PrinterJob.getPrinterJob();
 	
-	public MiniHelp(String mainTitle, boolean showIndexTab, boolean showSearchTab) {
+	MiniHelp(String mainTitle, boolean showIndexTab, boolean showSearchTab) {
 		super(mainTitle);
 		JPanel leftPanel = new JPanel(new GridLayout(1, 1));
 		JPanel rightPanel = new JPanel(new GridLayout(1, 1));
@@ -175,65 +175,6 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		this.setSize(screenSize.width * 2 / 3, screenSize.height * 2 / 3);
 		this.setLocation(screenSize.width / 2 - this.getSize().width / 2,
 				screenSize.height / 2 - this.getSize().height / 2);
-	}
-	
-	/**
-	 * 
-	 * Constructs the help window, which can later be displayes by calling
-	 * setVisible(true).
-	 * 
-	 * @param configuration
-	 *            the {@link Configuration} object that contains the parsed
-	 *            configuration data.
-	 * @param baseUri
-	 *            the {@link URI}, where relative paths of the documents are
-	 *            resolved.
-	 * @param showIndexTab
-	 *            whether to show the index tab. The default behavior is to only
-	 *            show the index tab when index terms are defined in the
-	 *            configuration.
-	 * @param showSearchTab
-	 *            whether to show the search tab. The default is
-	 *            <code>true</code>.
-	 * @throws HeadlessException
-	 */
-	public MiniHelp(String mainTitle, Configuration configuration, URI baseUri, boolean showIndexTab,
-			boolean showSearchTab) throws HeadlessException {
-		this(mainTitle, showIndexTab, showSearchTab);
-		addHelpset(configuration, baseUri);
-	}
-
-	/**
-	 * Constructs the help window, which can later be displayes by calling
-	 * setVisible(true).
-	 * 
-	 * @param configuration
-	 *            the {@link Configuration} object that contains the parsed
-	 *            configuration data.
-	 * @param baseUri
-	 *            the {@link URI}, where relative paths of the documents are
-	 *            resolved.
-	 * @throws HeadlessException
-	 */
-	public MiniHelp(String mainTitle, Configuration configuration, URI baseUri) throws HeadlessException {
-		this(mainTitle, configuration, baseUri, configuration.getIndexItems().isEmpty() ? false : true, true);
-	}
-	
-	/**
-	 * Constructs the help window, which can later be displayes by calling
-	 * setVisible(true).
-	 * 
-	 * @param configuration
-	 *            the {@link Configuration} object that contains the parsed
-	 *            configuration data.
-	 * @param baseUri
-	 *            the {@link URI}, where relative paths of the documents are
-	 *            resolved.
-	 * @throws HeadlessException
-	 */
-	public MiniHelp(Configuration configuration, URI baseUri) throws HeadlessException {
-		this(configuration.getTitle(), configuration, baseUri, configuration.getIndexItems().isEmpty() ? false : true,
-				true);
 	}
 
 	public void addHelpset(Configuration configuration, URI baseUri) {
