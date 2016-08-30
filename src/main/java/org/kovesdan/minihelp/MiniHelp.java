@@ -29,6 +29,7 @@
 package org.kovesdan.minihelp;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.HeadlessException;
@@ -45,6 +46,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
@@ -60,7 +63,12 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
+import javax.swing.text.Highlighter;
+import javax.swing.text.Highlighter.Highlight;
+import javax.swing.text.Highlighter.HighlightPainter;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
@@ -434,6 +442,7 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 		try {
 			history.navigatedTo(url.toString());
 			htmlPane.setPage(url.toString());
+			removeHighlights();
 			toolbar.updateActiveButtons();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -501,5 +510,27 @@ public class MiniHelp extends JFrame implements HyperlinkListener {
 	public void hyperlinkUpdate(HyperlinkEvent e) {
 		if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED)
 			displayPageForUrl(e.getURL());
+	}
+
+	public void highlight(Pattern pattern) {
+		removeHighlights();
+		try {
+			HighlightPainter highlightPainter = new MiniHelpHighlightPainter(Color.YELLOW);
+			Highlighter highlighter = htmlPane.getHighlighter();
+			Document doc = htmlPane.getDocument();
+			Matcher matcher = pattern.matcher(doc.getText(0, doc.getLength()));
+
+			while (matcher.find())
+				highlighter.addHighlight(matcher.start(), matcher.end(), highlightPainter);
+
+		} catch (BadLocationException e) {
+		}
+	}
+
+	public void removeHighlights() {
+		Highlighter highlighter = htmlPane.getHighlighter();
+		for (Highlight h : highlighter.getHighlights())
+			if (h.getPainter() instanceof MiniHelpHighlightPainter)
+				highlighter.removeHighlight(h);
 	}
 }

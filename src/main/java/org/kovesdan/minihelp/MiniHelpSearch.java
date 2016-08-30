@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.DefaultListCellRenderer;
@@ -89,6 +90,7 @@ class MiniHelpSearch extends JPanel implements FocusListener {
 	private JTextField searchField;
 	private JProgressBar searchProgressBar;
 	private JButton searchButton;
+	private Pattern pattern;
 
 
 	class SearchAction extends AbstractAction {
@@ -149,33 +151,33 @@ class MiniHelpSearch extends JPanel implements FocusListener {
         }
     }
 
-	private boolean matches(String string, String keyword) {
-		if (!caseSensitive) {
-			keyword = keyword.toLowerCase();
-			string = string.toLowerCase();
-		}
+	private boolean matches(String string) {
+		if (pattern == null)
+			return false;
+		return pattern.matcher(string).find();
+	}
+	
+	private void compilePattern(String keyword) {
+		int flags = 0;
+		if (!caseSensitive)
+			flags += Pattern.CASE_INSENSITIVE;
+		
+		if (!regex && !wholeWords)
+			flags += Pattern.LITERAL;
+		
+		String pat = keyword;
+		if (wholeWords) {
+			if (!keyword.startsWith(".*\\b"))
+				pat = ".*\\b" + pat;
+			if (!keyword.endsWith("\\b.*"))
+				pat = pat + "\\b.*";
+		} 
 
-		String pattern = keyword;
-		if (regex) {
-			if (wholeWords) {
-				if (!keyword.startsWith(".*\\b"))
-					pattern = ".*\\b" + pattern;
-				if (!keyword.endsWith("\\b.*"))
-					pattern = pattern + "\\b.*";
-			} else
-				pattern = "^.*" + pattern + ".*$";
-		} else if (wholeWords)
-			pattern = ".*\\b" + pattern + "\\b.*";
-
-		if (wholeWords || regex) {
-			return string.matches(pattern);
-		} else {
-			return string.contains(keyword);
-		}
+		pattern = Pattern.compile(pat, flags);
 	}
 
 	private void searchIndexItem(IndexItem item, String keyword) {
-		if (matches(item.getText(), keyword) && item.getTarget() != null)
+		if (matches(item.getText()) && item.getTarget() != null)
 			resultSet.add(new LinkInfo(item.getText().trim(), item.getTarget()));
 
 		for (IndexItem i : item.getIndexItems())
@@ -185,12 +187,12 @@ class MiniHelpSearch extends JPanel implements FocusListener {
 	}
 
 	private void searchIndexEntry(IndexEntry entry, String keyword) {
-		if (matches(entry.getText(), keyword))
+		if (matches(entry.getText()))
 			resultSet.add(new LinkInfo(entry.getText(), entry.getTarget()));
 	}
 
 	private void searchTOCItem(TOCItem item, String keyword) {
-		if (matches(item.getText(), keyword))
+		if (matches(item.getText()))
 			resultSet.add(new LinkInfo(item.getText(), item.getTarget()));
 		for (TOCItem i : item.getTOCItems())
 			searchTOCItem(i, keyword);
@@ -202,7 +204,7 @@ class MiniHelpSearch extends JPanel implements FocusListener {
 
 			String line;
 			while ((line = in.readLine()) != null) {
-				if (matches(line.replaceAll("<[^>]+>", ""), keyword)) {
+				if (matches(line.replaceAll("<[^>]+>", ""))) {
 					matches = true;
 					break;
 				}
@@ -220,6 +222,7 @@ class MiniHelpSearch extends JPanel implements FocusListener {
 		searchField.setEditable(false);
 		searchField.setEnabled(false);
     	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    	compilePattern(searchField.getText());
     	SearchTask searchTask = new SearchTask();
     	searchTask.execute();
 	}
@@ -256,15 +259,15 @@ class MiniHelpSearch extends JPanel implements FocusListener {
 
 		caseSensitiveCheckBox = new JCheckBox(Messages.get("Case sensitive"));
 		caseSensitiveCheckBox.setMnemonic(Messages.mnemonic("Case sensitive Mnemonic", "C"));
-		caseSensitiveCheckBox.addItemListener(e -> {
-			caseSensitive = e.getStateChange() == ItemEvent.SELECTED;
-			if (!caseSensitive) {
-				regex = false;
-				regexCheckBox.setSelected(false);
+		caseSensitiveCheckBox.addItemListener(e -> caseSensitive = e.getStateChange() == ItemEvent.SELECTED);
+		wholeWordCheckBox = new JCheckBox(Messages.get("Whole word"));
+		wholeWordCheckBox.addItemListener(e -> {
+			wholeWords = e.getStateChange() == ItemEvent.SELECTED;
+			if (wholeWords) {
+				regex = true;
+				regexCheckBox.setSelected(true);
 			}
 		});
-		wholeWordCheckBox = new JCheckBox(Messages.get("Whole word"));
-		wholeWordCheckBox.addItemListener(e -> wholeWords = e.getStateChange() == ItemEvent.SELECTED);
 		wholeWordCheckBox.setMnemonic(Messages.mnemonic("Whole word Mnemonic", "W"));
 		fullTextCheckBox = new JCheckBox(Messages.get("Search in documents"));
 		fullTextCheckBox.addItemListener(e -> fullText = e.getStateChange() == ItemEvent.SELECTED);
@@ -272,9 +275,9 @@ class MiniHelpSearch extends JPanel implements FocusListener {
 		regexCheckBox = new JCheckBox(Messages.get("Regular expression"));
 		regexCheckBox.addItemListener(e -> {
 			regex = e.getStateChange() == ItemEvent.SELECTED;
-			if (regex) {
-				caseSensitive = true;
-				caseSensitiveCheckBox.setSelected(true);
+			if (!regex) {
+				wholeWords = false;
+				wholeWordCheckBox.setSelected(false);
 			}
 		});
 		regexCheckBox.setMnemonic(Messages.mnemonic("Regular expression Mnemonic", "R"));
@@ -316,7 +319,10 @@ class MiniHelpSearch extends JPanel implements FocusListener {
 		resultList = new JList<>(resultModel);
 		resultList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		JScrollPane resultScroller = new JScrollPane(resultList);
-		resultList.addListSelectionListener(e -> updateHtmlPane(mainApp));
+		resultList.addListSelectionListener(e -> {
+			updateHtmlPane(mainApp);
+			mainApp.highlight(pattern);
+		});
 		resultList.addFocusListener(new FocusGainedListener(() -> updateHtmlPane(mainApp)));
 
 		GridBagConstraints cons = new GridBagConstraints(0, 0, 1, 1, 1, 1, GridBagConstraints.PAGE_START,
