@@ -83,6 +83,8 @@ class MiniHelpSearch extends JPanel implements FocusListener {
 	private JCheckBox wholeWordCheckBox;
 	private boolean fullText = false;
 	private JCheckBox fullTextCheckBox;
+	private boolean regex = false;
+	private JCheckBox regexCheckBox;
 	private TreeSet<LinkInfo> resultSet = new TreeSet<>();
 	private JTextField searchField;
 	private JProgressBar searchProgressBar;
@@ -153,8 +155,19 @@ class MiniHelpSearch extends JPanel implements FocusListener {
 			string = string.toLowerCase();
 		}
 
-		if (wholeWords) {
-			String pattern = ".*\\b" + keyword + "\\b.*";
+		String pattern = keyword;
+		if (regex) {
+			if (wholeWords) {
+				if (!keyword.startsWith(".*\\b"))
+					pattern = ".*\\b" + pattern;
+				if (!keyword.endsWith("\\b.*"))
+					pattern = pattern + "\\b.*";
+			} else
+				pattern = "^.*" + pattern + ".*$";
+		} else if (wholeWords)
+			pattern = ".*\\b" + pattern + "\\b.*";
+
+		if (wholeWords || regex) {
 			return string.matches(pattern);
 		} else {
 			return string.contains(keyword);
@@ -243,13 +256,28 @@ class MiniHelpSearch extends JPanel implements FocusListener {
 
 		caseSensitiveCheckBox = new JCheckBox(Messages.get("Case sensitive"));
 		caseSensitiveCheckBox.setMnemonic(Messages.mnemonic("Case sensitive Mnemonic", "C"));
-		caseSensitiveCheckBox.addItemListener(e -> caseSensitive = e.getStateChange() == ItemEvent.SELECTED);
+		caseSensitiveCheckBox.addItemListener(e -> {
+			caseSensitive = e.getStateChange() == ItemEvent.SELECTED;
+			if (!caseSensitive) {
+				regex = false;
+				regexCheckBox.setSelected(false);
+			}
+		});
 		wholeWordCheckBox = new JCheckBox(Messages.get("Whole word"));
 		wholeWordCheckBox.addItemListener(e -> wholeWords = e.getStateChange() == ItemEvent.SELECTED);
 		wholeWordCheckBox.setMnemonic(Messages.mnemonic("Whole word Mnemonic", "W"));
 		fullTextCheckBox = new JCheckBox(Messages.get("Search in documents"));
 		fullTextCheckBox.addItemListener(e -> fullText = e.getStateChange() == ItemEvent.SELECTED);
 		fullTextCheckBox.setMnemonic(Messages.mnemonic("Search in documents Mnemonic", "D"));
+		regexCheckBox = new JCheckBox(Messages.get("Regular expression"));
+		regexCheckBox.addItemListener(e -> {
+			regex = e.getStateChange() == ItemEvent.SELECTED;
+			if (regex) {
+				caseSensitive = true;
+				caseSensitiveCheckBox.setSelected(true);
+			}
+		});
+		regexCheckBox.setMnemonic(Messages.mnemonic("Regular expression Mnemonic", "R"));
 		searchButton = new JButton(Messages.get("Search"));
 		searchButton.addActionListener(e -> initSearch(searchField.getText()));
 		searchProgressBar = new JProgressBar();
@@ -266,7 +294,9 @@ class MiniHelpSearch extends JPanel implements FocusListener {
 								.addGroup(searchFormLayout.createParallelGroup()
 										.addComponent(caseSensitiveCheckBox)
 										.addComponent(fullTextCheckBox))
-								.addComponent(wholeWordCheckBox)))
+								.addGroup(searchFormLayout.createParallelGroup()
+										.addComponent(wholeWordCheckBox)
+										.addComponent(regexCheckBox))))
 				.addComponent(searchButton))
 				.addComponent(searchProgressBar));
 		searchFormLayout
@@ -276,7 +306,10 @@ class MiniHelpSearch extends JPanel implements FocusListener {
 						.addGroup(searchFormLayout.createParallelGroup()
 								.addComponent(caseSensitiveCheckBox)
 								.addComponent(wholeWordCheckBox))
-						.addComponent(fullTextCheckBox).addComponent(searchProgressBar));
+						.addGroup(searchFormLayout.createParallelGroup()
+								.addComponent(fullTextCheckBox)
+								.addComponent(regexCheckBox))
+						.addComponent(searchProgressBar));
 		searchFormPanel.setLayout(searchFormLayout);
 
 		resultModel = new MiniHelpIndexListModel<>(Collections.emptyList());
